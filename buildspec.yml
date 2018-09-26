@@ -39,9 +39,9 @@ phases:
       # Package the application with AWS SAM
       #- aws cloudformation package --template-file template.yml --s3-bucket ${S3_BUCKET} --output-template-file packaged.yml
       #- aws cloudformation package --s3-bucket ${S3_BUCKET}
-      - zip devices_get.zip ./main
+      - zip accounts_initialPoints.zip ./main
       #- aws lambda create-function --region eu-west-1 --function-name main --memory 512 --role arn:aws:iam::622738256393:role/CodeStarWorker-lambda-api-go-t-Lambda --runtime go1.x  --zip-file fileb://products_get.zip --handler main
 
 artifacts:
   files:
-  - devices_get.zip
+  - accounts_initialPoints.zip
