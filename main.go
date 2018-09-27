@@ -12,16 +12,18 @@ import (
 //T4wAccount cuenta de usuario
 type T4wAccount struct {
 	AUserID      uint32 `json:"userID"`
-	InitialOints int    `json:"points"`
+	InitialOints uint32 `json:"points"`
 	Key          string `json:"key"`
 	Address      string `json:"address"`
 	AURL         string `json: "url"`
+	MeetingID    uint32 `json:"meetingID"`
 }
 
 // User datos de Usuario
 type User struct {
 	UserID       uint32 `json:"userID"`
-	InitialOints int    `json:"points"`
+	InitialOints uint32 `json:"points"`
+	MeetingID    uint32 `json:"meetingID"`
 }
 
 func main() {
@@ -51,6 +53,7 @@ func Handler(req events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse,
 	tfwAccount := new(T4wAccount)
 	tfwAccount.AUserID = user.UserID
 	tfwAccount.InitialOints = user.InitialOints
+	tfwAccount.MeetingID = user.MeetingID
 	log.Printf("tfwAccount : %v", tfwAccount)
 	log.Printf("AUser : %v", user)
 	log.Printf("tfwAccount.AUserID : %v", user)

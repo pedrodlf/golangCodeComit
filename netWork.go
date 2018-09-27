@@ -1,8 +1,6 @@
 package main
 
 import (
-	"encoding/json"
-	"fmt"
 	"io/ioutil"
 	"log"
 	"os"
@@ -48,7 +46,8 @@ func CreateAccount(id uint32) (string, string, string, error) {
 		log.Fatalf("Failed to creat TFWAccount : %v", err)
 		return "", "", "", err
 	}
-	adrs := string(tfwAcount.Address.Hex())
+	//adrs := string(tfwAcount.Address.Hex())
+	adrs := string(tfwAcount.Address.String())
 	log.Printf("tfwAcount.Address---> : %v", tfwAcount.Address)
 	log.Printf("tfwAcount.Address---> : %v", adrs)
 	log.Printf("tfwAcount.URL---> : %v", tfwAcount.URL)
@@ -56,31 +55,10 @@ func CreateAccount(id uint32) (string, string, string, error) {
 	check(err)
 
 	log.Printf("Key---> : %v", string(dat))
-	err = ks.Unlock(tfwAcount, pass)
-	check(err)
+
 	return string(dat), adrs, tfwAcount.URL.Path, nil
 }
 
-func importKey(keyFile, password string) (*keystore.Key, error) {
-	m := make(map[string]interface{})
-	if err := json.Unmarshal([]byte(keyFile), &m); err != nil {
-
-		return nil, err
-	}
-	for k, v := range m {
-		fmt.Printf("%s ->", k)
-		log.Println(v)
-
-	}
-
-	result, err := keystore.DecryptKey([]byte(keyFile), password)
-	if err != nil {
-		log.Fatalf("Failed to get *key : %v", err)
-		return nil, err
-	}
-
-	return result, nil
-}
 func check(e error) {
 	if e != nil {
 		panic(e)
