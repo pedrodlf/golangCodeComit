@@ -15,7 +15,7 @@ type T4wAccount struct {
 	InitialOints uint32 `json:"points"`
 	Key          string `json:"key"`
 	Address      string `json:"address"`
-	AURL         string `json: "url"`
+	AURL         string `json:"url"`
 	MeetingID    uint32 `json:"meetingID"`
 }
 
