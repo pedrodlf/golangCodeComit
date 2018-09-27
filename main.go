@@ -1,30 +1,13 @@
 package main
 
 import (
-	"encoding/json"
 	"log"
 	"net/http"
+	"strconv"
 
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
 )
-
-//T4wAccount cuenta de usuario
-type T4wAccount struct {
-	AUserID      uint32 `json:"userID"`
-	InitialOints uint32 `json:"points"`
-	Key          string `json:"key"`
-	Address      string `json:"address"`
-	AURL         string `json:"url"`
-	MeetingID    uint32 `json:"meetingID"`
-}
-
-// User datos de Usuario
-type User struct {
-	UserID       uint32 `json:"userID"`
-	InitialOints uint32 `json:"points"`
-	MeetingID    uint32 `json:"meetingID"`
-}
 
 func main() {
 	lambda.Start(Handler)
@@ -40,47 +23,64 @@ func Handler(req events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse,
 	log.Print("HTTP Mehtod")
 	log.Print(req.HTTPMethod)
 
-	user := new(User)
-	err := json.Unmarshal([]byte(req.Body), &user)
-	if err != nil {
-		log.Print(err)
-		return events.APIGatewayProxyResponse{
-			StatusCode: http.StatusBadRequest,
-			Body:       "Smart Contract : Unsupported Media Type ",
-		}, nil
-	}
-
-	tfwAccount := new(T4wAccount)
-	tfwAccount.AUserID = user.UserID
-	tfwAccount.InitialOints = user.InitialOints
-	tfwAccount.MeetingID = user.MeetingID
-	log.Printf("tfwAccount : %v", tfwAccount)
-	log.Printf("AUser : %v", user)
-	log.Printf("tfwAccount.AUserID : %v", user)
-
-	tfwAccount.Key, tfwAccount.Address, tfwAccount.AURL, err = CreateAccount(user.UserID)
-	log.Printf("tfwAccount.Key : %v", tfwAccount.Key)
+	points, err := strconv.ParseInt(req.QueryStringParameters["points"], 10, 32)
+	actions, err := strconv.ParseInt(req.QueryStringParameters["action"], 10, 32)
+	meetingID, err := strconv.ParseInt(req.QueryStringParameters["meetingID"], 10, 32)
+	userID, err := strconv.ParseInt(req.PathParameters["userID"], 10, 32)
+	points32 := uint32(points)
+	meeting := uint32(meetingID)
+	action := uint32(actions)
 	if err != nil {
 
 		return events.APIGatewayProxyResponse{
 			StatusCode: http.StatusInternalServerError,
-			Body:       "Account error :  cant get new account",
+			Body:       "Number Format Exception ",
 		}, nil
 
 	}
 
-	err = putProduct(tfwAccount)
+	log.Printf("points-----> : %v", points)
+	log.Printf("action-----> : %v", action)
+	log.Printf("userID-----> : %v", userID)
+	log.Printf("meetingID--> : %v", meeting)
+
+	user, err := getUsserAddress(userID)
 
 	if err != nil {
 
 		return events.APIGatewayProxyResponse{
-			StatusCode: http.StatusConflict,
-			Body:       "Account error :  cant save the account",
+			StatusCode: http.StatusInternalServerError,
+			Body:       "Null Address Exception: User common.Address cant be recovered from Database or don't exist err--->" + err.Error(),
 		}, nil
 
 	}
-	return events.APIGatewayProxyResponse{
-		StatusCode: http.StatusOK,
-		Body:       "Account: Created ",
-	}, nil
+	log.Printf("user.Address--> : %v", user)
+
+	result, err := AddPoints(user, meeting, points32, action)
+	if err != nil {
+
+		return events.APIGatewayProxyResponse{
+			StatusCode: http.StatusInternalServerError,
+			Body:       "Error updating Points to chain err--->" + err.Error(),
+		}, nil
+
+	}
+	switch result {
+	case 900:
+		return events.APIGatewayProxyResponse{
+			StatusCode: http.StatusOK,
+			Body:       "Points Updated",
+		}, nil
+	case 902:
+		return events.APIGatewayProxyResponse{
+			StatusCode: http.StatusBadRequest,
+			Body:       "Points can't be updated ",
+		}, nil
+	default:
+		return events.APIGatewayProxyResponse{
+			StatusCode: http.StatusInternalServerError,
+			Body:       "Points can't be updated ",
+		}, nil
+	}
+
 }
