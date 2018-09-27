@@ -38,13 +38,15 @@ func saveT4wAccount(account *T4wAccount) error {
 	}
 	return nil
 }
-func getUsserAddress(userID int64) (common.Address, error) {
+
+//GetUsserAddress by userID
+func GetUsserAddress(userID int64) (common.Address, error) {
 
 	result, err := db.GetItem(&dynamodb.GetItemInput{
 		TableName: aws.String("likedat-accounts"),
 		Key: map[string]*dynamodb.AttributeValue{
 			"userID": {
-				N: aws.String(string(userID)),
+				S: aws.String(string(userID)),
 			},
 		},
 	})

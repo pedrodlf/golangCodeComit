@@ -44,7 +44,7 @@ func Handler(req events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse,
 	log.Printf("userID-----> : %v", userID)
 	log.Printf("meetingID--> : %v", meeting)
 
-	user, err := getUsserAddress(userID)
+	user, err := GetUsserAddress(userID)
 
 	if err != nil {
 
