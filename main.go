@@ -26,7 +26,7 @@ func Handler(req events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse,
 	points, err := strconv.ParseInt(req.QueryStringParameters["points"], 10, 32)
 	actions, err := strconv.ParseInt(req.QueryStringParameters["action"], 10, 32)
 	meetingID, err := strconv.ParseInt(req.QueryStringParameters["meetingID"], 10, 32)
-	userID, err := strconv.ParseInt(req.PathParameters["userID"], 10, 32)
+	userID := req.PathParameters["userID"]
 	points32 := uint32(points)
 	meeting := uint32(meetingID)
 	action := uint32(actions)
