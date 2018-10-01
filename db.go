@@ -12,12 +12,11 @@ import (
 )
 
 type T4wAccount struct {
-	AUserID      uint32 `json:"userID"`
-	InitialOints uint32 `json:"points"`
+	AUserID      string `json:"userID"`
+	InitialOints int    `json:"points"`
 	Key          string `json:"key"`
 	Address      string `json:"address"`
-	AURL         string `json:"url"`
-	MeetingID    uint32 `json:"meetingID"`
+	AURL         string `json: "url"`
 }
 
 var db = dynamodb.New(session.New(), aws.NewConfig().WithRegion("eu-west-1"))
@@ -38,15 +37,13 @@ func saveT4wAccount(account *T4wAccount) error {
 	}
 	return nil
 }
-
-//GetUsserAddress by userID
-func GetUsserAddress(userID string) (common.Address, error) {
+func getUsserAddress(userID int64) (common.Address, error) {
 
 	result, err := db.GetItem(&dynamodb.GetItemInput{
 		TableName: aws.String("likedat-accounts"),
 		Key: map[string]*dynamodb.AttributeValue{
 			"userID": {
-				N: aws.String(userID),
+				N: aws.String(string(userID)),
 			},
 		},
 	})

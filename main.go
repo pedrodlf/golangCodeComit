@@ -26,7 +26,7 @@ func Handler(req events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse,
 	points, err := strconv.ParseInt(req.QueryStringParameters["points"], 10, 32)
 	actions, err := strconv.ParseInt(req.QueryStringParameters["action"], 10, 32)
 	meetingID, err := strconv.ParseInt(req.QueryStringParameters["meetingID"], 10, 32)
-	userID := req.PathParameters["userID"]
+	userID, err := strconv.ParseInt(req.PathParameters["userID"], 10, 32)
 	points32 := uint32(points)
 	meeting := uint32(meetingID)
 	action := uint32(actions)
@@ -44,8 +44,7 @@ func Handler(req events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse,
 	log.Printf("userID-----> : %v", userID)
 	log.Printf("meetingID--> : %v", meeting)
 
-	user, err := GetUsserAddress(userID)
-
+	user, err := getUsserAddress(userID)
 	if err != nil {
 
 		return events.APIGatewayProxyResponse{
@@ -55,32 +54,70 @@ func Handler(req events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse,
 
 	}
 	log.Printf("user.Address--> : %v", user)
+	switch action {
 
-	result, err := AddPoints(user, meeting, points32, action)
-	if err != nil {
+	case 1:
+		log.Print("Adding points to user acount")
+		result, err := AddPoints(user, meeting, points32, action)
+		if err != nil {
 
-		return events.APIGatewayProxyResponse{
-			StatusCode: http.StatusInternalServerError,
-			Body:       "Error updating Points to chain err--->" + err.Error(),
-		}, nil
+			return events.APIGatewayProxyResponse{
+				StatusCode: http.StatusInternalServerError,
+				Body:       "Error updating Points to chain err--->" + err.Error(),
+			}, nil
 
-	}
-	switch result {
-	case 900:
-		return events.APIGatewayProxyResponse{
-			StatusCode: http.StatusOK,
-			Body:       "Points Updated",
-		}, nil
-	case 902:
-		return events.APIGatewayProxyResponse{
-			StatusCode: http.StatusBadRequest,
-			Body:       "Points can't be updated ",
-		}, nil
+		}
+		switch result {
+		case 900:
+			return events.APIGatewayProxyResponse{
+				StatusCode: http.StatusOK,
+				Body:       "Points Updated",
+			}, nil
+		case 902:
+			return events.APIGatewayProxyResponse{
+				StatusCode: http.StatusBadRequest,
+				Body:       "Points can't be updated ",
+			}, nil
+		default:
+			return events.APIGatewayProxyResponse{
+				StatusCode: http.StatusInternalServerError,
+				Body:       "Points can't be updated ",
+			}, nil
+		}
+	case 2:
+		log.Print("Paying price from user acount")
+		result, err := MakePayment(user, meeting, points32, action)
+		if err != nil {
+
+			return events.APIGatewayProxyResponse{
+				StatusCode: http.StatusInternalServerError,
+				Body:       "Error updating Points to chain err--->" + err.Error(),
+			}, nil
+
+		}
+		switch result {
+		case 900:
+			return events.APIGatewayProxyResponse{
+				StatusCode: http.StatusOK,
+				Body:       "Points Updated",
+			}, nil
+		case 902:
+			return events.APIGatewayProxyResponse{
+				StatusCode: http.StatusBadRequest,
+				Body:       "Points can't be updated ",
+			}, nil
+		default:
+			return events.APIGatewayProxyResponse{
+				StatusCode: http.StatusInternalServerError,
+				Body:       "Points can't be updated ",
+			}, nil
+		}
 	default:
 		return events.APIGatewayProxyResponse{
 			StatusCode: http.StatusInternalServerError,
 			Body:       "Points can't be updated ",
 		}, nil
+
 	}
 
 }
